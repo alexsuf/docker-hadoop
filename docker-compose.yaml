@@ -1,0 +1,80 @@
+version: '3.8'
+# http://127.0.0.1:8000
+services:
+
+  namenode:
+    image: alexsuf/hadoop
+    container_name: namenode
+    command: ["hdfs", "namenode"]
+    ports:
+      - 9870:9870
+      - 8020:8020
+      - 9000:9000
+    env_file:
+      - ./config
+    environment:
+      ENSURE_NAMENODE_DIR: "/tmp/hadoop-hadoop/dfs/name"
+    volumes:
+      - ./namenode_data:/data
+      - ./files:/mnt/files
+
+  datanode1:
+    image: alexsuf/hadoop
+    container_name: datanode1
+    command: ["hdfs", "datanode"]
+    ports:
+      - 9864:9864
+    env_file:
+      - ./config      
+    volumes:
+      - ./datanode_data1:/data
+
+  datanode2:
+    image: alexsuf/hadoop
+    container_name: datanode2
+    command: ["hdfs", "datanode"]
+    env_file:
+      - ./config      
+    volumes:
+      - ./datanode_data2:/data
+
+  datanode3:
+    image: alexsuf/hadoop
+    container_name: datanode3
+    command: ["hdfs", "datanode"]
+    env_file:
+      - ./config      
+    volumes:
+      - ./datanode_data3:/data
+
+  resourcemanager:
+    image: alexsuf/hadoop
+    container_name: resourcemanager
+    command: ["yarn", "resourcemanager"]
+    depends_on:
+      - namenode
+      - datanode1
+      - datanode2
+      - datanode3
+    ports:
+      - 8088:8088
+    env_file:
+      - ./config
+    volumes:
+      - ./resourcemanager_data:/data
+
+  nodemanager:
+    image: alexsuf/hadoop
+    container_name: nodemanager
+    command: ["yarn", "nodemanager"]
+    depends_on:
+      - namenode
+      - datanode1
+      - datanode2
+      - datanode3
+    ports:
+      - 8042:8042
+    env_file:
+      - ./config
+    volumes:
+      - ./nodemanager_data:/data
